@@ -648,17 +648,28 @@ if (i % 17 === 0) {
   }
 
   function closePhoto(){
-    lightbox.classList.remove("open");
-    if (lastStar) {
-        lastStar.classList.add("afterglow");
-        setTimeout(() => {
-            lastStar.classList.remove("afterglow");
-        }, 2600);
-    }
+  lightbox.classList.remove("open");
+
+  if (lastStar) {
+    lastStar.classList.add("afterglow");
+    setTimeout(() => {
+      lastStar.classList.remove("afterglow");
+    }, 2600);
+  }
+
+  if (pendingFinale && !finaleTriggered) {
+    // 📱 mobile fix: let the photo fully close first
+    setTimeout(() => {
+      triggerFinale();
+    }, 220);
+  }
+}
+
     // Start de animatie pas nadat de laatste foto is geopend en nu afgesloten
     if(pendingFinale && !finaleTriggered){
+    setTimeout(() => { 
       triggerFinale();
-    }
+    }, 220);
   }
   document.getElementById("closeBtn").addEventListener("click", closePhoto);
   lightbox.addEventListener("click", (e)=>{ if(e.target === lightbox) closePhoto(); });
