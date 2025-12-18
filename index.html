@@ -98,6 +98,23 @@
     .special-star{
   transform: scale(1.25);
 }
+.download-btn{
+  display: inline-block;
+  margin-top: 18px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  backdrop-filter: blur(6px);
+}
+
+.download-btn:hover{
+  background: rgba(255,255,255,0.25);
+}
+
 .afterglow-mode .star{
   animation-duration: 18s !important;
 }
@@ -288,9 +305,19 @@
 
   <!-- Finale tekst -->
   <div class="final" id="final">
+    
     <div class="msg">
       <h2 id="finalTitle">Jij bent mijn hele sterrenhemel ❤️</h2>
       <p id="finalText">Elke ster leidde naar jou. Ik hou van je, voor altijd.</p>
+
+    <a
+        href="downloads/VOG.png"
+        download
+        class="download-btn"
+>
+  VOG download
+</a>
+
     </div>
   </div>
 
