@@ -1,0 +1,842 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sterrengloed vol liefde ✨❤️</title>
+<style>
+  :root{
+    --bg-top:#0a0f2c;
+    --bg-bottom:#030611;
+    --dot:#fff7b1;
+    --dot-glow:#ffd86b;
+    --accent:#ff6b6b;
+    --text:#ffffff;
+    --card-border:rgba(255,255,255,0.18);
+    --blur:18px;
+    --maxw:900px;
+
+    /* Beweging afstelling */
+    --drift-min: 6px;
+    --drift-max: 16px;
+    --twinkle-min: 2.2s;
+    --twinkle-max: 4.2s;
+    --drift-dur-min: 6s;
+    --drift-dur-max: 14s;
+    --shooting-every-min: 6s;
+    --shooting-every-max: 12s;
+  }
+
+  html,body{
+    height:100%; margin:0; overflow:hidden;
+    background: radial-gradient(1200px 600px at 50% -100px, var(--bg-top), var(--bg-bottom) 60%);
+    color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Header */
+  .header{
+    position:fixed; top:16px; left:50%; transform:translateX(-50%);
+    padding:8px 16px; text-align:center; z-index:100;
+    width:min(calc(100% - 24px), var(--maxw));
+    background:linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.1));
+    backdrop-filter: blur(10px);
+    border:1px solid var(--card-border); border-radius:12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  .title{ margin:0; font-weight:700; letter-spacing:.2px; }
+
+  /* Bediening (muziek) */
+  .controls{
+    position:fixed; top:16px; right:16px; z-index:110;
+    display:flex; gap:8px;
+  }
+  .btn{
+    background: rgba(255,255,255,.08);
+    color: var(--text);
+    border:1px solid var(--card-border);
+    padding:8px 10px; border-radius:10px; cursor:pointer;
+    backdrop-filter: blur(6px);
+  }
+  .btn:hover{ background: rgba(255,255,255,.12); }
+
+  /* Luchtlagen */
+  .sky{
+    position:relative; width:100%; height:100%; overflow:hidden;
+    perspective: 1000px;
+  }
+  #fx{ position:absolute; inset:0; z-index:2; pointer-events:none; }
+  .twinkle{
+    position:absolute; inset:0; z-index:1; pointer-events:none !important;
+    background:
+      radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,.8), transparent 55%),
+      radial-gradient(1.25px 1.25px at 70% 10%, rgba(255,255,255,.7), transparent 55%),
+      radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.6), transparent 55%),
+      radial-gradient(1.4px 1.4px at 90% 60%, rgba(255,255,255,.5), transparent 55%);
+    transition: transform .2s ease-out;
+  }
+
+  /* Sterren — mooi + beweging */
+  .star{
+    position:absolute; left:0; top:0; transform:translate(-50%,-50%);
+    width:24px; height:24px; border:none; padding:0; background:transparent;
+    z-index:3; cursor:pointer; pointer-events:auto; display:block;
+    will-change: transform;
+    animation: drift var(--drift-dur,10s) ease-in-out var(--drift-delay,0s) infinite alternate;
+  }
+  .star .dot{
+    position:absolute; inset:0; border-radius:50%;
+    background: radial-gradient(circle at 50% 50%, var(--dot), var(--dot-glow) 60%, transparent 72%);
+    mix-blend-mode: screen;
+    box-shadow:
+      0 0 6px rgba(255,255,255,.85),
+      0 0 14px rgba(255,216,107,.35),
+      0 0 24px rgba(255,216,107,.25);
+    will-change: opacity, transform, filter;
+    animation: twinkle var(--twinkle-dur,3s) ease-in-out var(--twinkle-delay,0s) infinite;
+    .special-star{
+  transform: scale(1.25);
+}
+.afterglow-mode .star{
+  animation-duration: 18s !important;
+}
+
+.afterglow-mode .twinkle{
+  opacity: 0.6;
+}
+
+.afterglow-mode .shooting{
+  display: none;
+}
+.afterglow .dot{
+  animation: none;
+  filter: brightness(1.6);
+  box-shadow:
+    0 0 18px rgba(255,230,180,.9),
+    0 0 42px rgba(255,180,140,.6);
+}
+
+.special-star .dot{
+  background: radial-gradient(circle, #fff1c1, #ffb6a6 60%, transparent 72%);
+  box-shadow:
+    0 0 10px rgba(255,220,180,.9),
+    0 0 28px rgba(255,150,120,.45);
+}
+
+  }
+  .star .spark{
+    position:absolute; inset:0; pointer-events:none;
+    background:
+      radial-gradient(closest-side, rgba(255,255,255,.9), transparent 65%) 50% 0/2px 100% no-repeat,
+      radial-gradient(closest-side, rgba(255,255,255,.7), transparent 65%) 0 50%/100% 2px no-repeat;
+    opacity:.65; filter: blur(.2px);
+    transform-origin: 50% 50%;
+    animation: spin var(--spin-dur,7s) linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg) } }
+  @keyframes twinkle{
+    0%,100%{ opacity:.85; filter: brightness(1) }
+    50%{ opacity:1; filter: brightness(1.25) }
+  }
+  @keyframes drift{
+    0%  { transform: translate(calc(-50% + 0px),  calc(-50% + 0px)); }
+    50% { transform: translate(calc(-50% + var(--ax,8px)), calc(-50% + var(--ay,8px))); }
+    100%{ transform: translate(calc(-50% + 0px),  calc(-50% + 0px)); }
+  }
+
+  /* Lightbox */
+  .lightbox{
+    position:fixed; inset:0; display:none; z-index:40;
+    align-items:center; justify-content:center;
+    backdrop-filter: blur(var(--blur)) saturate(1.2);
+    background: radial-gradient(1200px 600px at 50% -100px, rgba(7,10,22,.45), rgba(3,6,17,.65) 60%);
+  }
+  .lightbox.open{ display:flex; }
+  .card{
+    width:min(92vw, 520px); max-height:82vh; overflow:hidden;
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    border:1px solid var(--card-border); border-radius:18px;
+    box-shadow: 0 30px 100px rgba(0,0,0,.60);
+    animation: pop .25s ease-out forwards;
+  }
+  @keyframes pop{ from{ opacity:0; transform:translateY(8px) scale(.97)} to{ opacity:1; transform:translateY(0) scale(1)} }
+  .card img{ width:100%; height:340px; object-fit:cover; display:block; background:#111; transition: filter .3s ease; }
+
+  /* Onder foto: alleen de sluitknop */
+  .caption{ padding:12px 16px; display:flex; align-items:center; justify-content:flex-end; }
+  .btn-close{ background:transparent; border:1px solid var(--card-border); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer; }
+  .btn-close:hover{ background:rgba(255,255,255,.08); }
+
+  /* Finale boodschap */
+  .final{ position:fixed; inset:0; display:none; z-index:50; align-items:center; justify-content:center; pointer-events:none; }
+  .final.show{ display:flex; }
+  .final .msg{
+    text-align:center; max-width:720px; padding:12px 18px; border-radius:16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.08));
+    border:1px solid var(--card-border); backdrop-filter: blur(10px);
+    box-shadow: 0 20px 80px rgba(0,0,0,.55); pointer-events:auto;
+    animation: msgpop .45s ease-out;
+  }
+  @keyframes msgpop{ from{ opacity:0; transform:scale(.96)} to{ opacity:1; transform:scale(1)}}
+  .final h2{ margin:0 0 8px; font-size:1.8rem; }
+  .final p{ margin:0; opacity:.9; }
+
+  /* Zwevende hartjes */
+  .float-heart{
+    position:fixed; bottom:-40px; left:50%; transform:translateX(-50%);
+    font-size:26px; color:var(--accent); opacity:0; z-index:60; pointer-events:none;
+    animation: rise 3.5s ease-in forwards;
+    filter: drop-shadow(0 0 8px rgba(255,90,130,.6));
+  }
+  @keyframes rise{ 0%{ transform:translate(-50%,0) scale(.9); opacity:0 } 20%{ opacity:1 } 100%{ transform:translate(-50%,-120vh) scale(1.4); opacity:0 } }
+
+  /* Voortgang */
+  .progress{
+    position:fixed; bottom:14px; left:50%; transform:translateX(-50%);
+    font-size:.9rem; opacity:.9; z-index:100;
+    background:rgba(255,255,255,.06); padding:6px 10px; border-radius:10px; border:1px solid var(--card-border);
+    backdrop-filter: blur(6px);
+  }
+
+  /* Gids-SVG’s (onzichtbaar) */
+  .heart-shape{
+    position:absolute; width:420px; height:380px; left:50%; top:50%;
+    transform:translate(-50%,-45%); opacity:0; pointer-events:none; z-index:0;
+  }
+  .initials-shape{
+    position:absolute; width:520px; height:220px; left:50%; top:50%;
+    transform:translate(-50%,-50%); opacity:0; pointer-events:none; z-index:0;
+  }
+
+  /* Vallende ster */
+  .shooting{
+    position:fixed; width:2px; height:2px; background: linear-gradient(90deg, rgba(255,255,255,1), rgba(255,255,255,0));
+    box-shadow: 0 0 12px 4px rgba(255,255,255,.6);
+    border-radius:2px; filter: blur(.2px);
+    pointer-events:none; z-index:1200;
+    transform: translate3d(0,0,0) rotate(var(--ang, -20deg));
+    animation: shoot var(--t, 1200ms) cubic-bezier(.22,.61,.36,1) forwards;
+  }
+  @keyframes shoot{
+    from{ opacity:0; transform: translate3d(var(--sx,0), var(--sy,0), 0) rotate(var(--ang,-20deg)) scaleX(0.6); }
+    10%{ opacity:1; }
+    to{ opacity:0; transform: translate3d(var(--ex,100vw), var(--ey,-20vh), 0) rotate(var(--ang,-20deg)) scaleX(1.2); }
+  }
+
+  @media (max-width:480px){
+    .card img{ height:280px }
+    .heart-shape{ width:330px; height:300px }
+    .initials-shape{ width:380px; height:180px }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="title">Sterrengloed vol liefde ✨❤️</h1>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="musicBtn" title="Muziek aan/uit">♪ Liefdesmuziek</button>
+  </div>
+
+  <main class="sky" id="sky" aria-label="Interactieve sterrenhemel">
+    <canvas id="fx" width="300" height="150" aria-hidden="true"></canvas>
+    <div class="twinkle" id="twinkle" aria-hidden="true"></div>
+
+    <!-- Groot hart (fase 1) -->
+    <svg class="heart-shape" viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path id="heartPath" d="M50 80 C 20 60, 5 45, 10 30 C 15 15, 35 15, 50 30 C 65 15, 85 15, 90 30 C 95 45, 80 60, 50 80 Z" fill="none" />
+    </svg>
+
+    <!-- 'R ❤️ A' (fase 2) -->
+    <svg class="initials-shape" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- R (links) -->
+      <path id="pathR" d="
+        M 20 85 L 20 15 L 50 15
+        Q 70 15 70 35
+        Q 70 55 50 55
+        L 20 55
+        M 20 55 L 75 85
+      " fill="none" />
+      <!-- Klein hartje (midden) -->
+      <path id="pathH" d="
+        M100 70
+        C100 60, 112 56, 118 60
+        C124 64, 122 76, 100 90
+        C 78 76, 76 64, 82 60
+        C 88 56, 100 60, 100 70 Z
+      " fill="none" />
+      <!-- A (rechts) -->
+      <path id="pathA" d="
+        M 120 85 L 140 15 L 160 15 L 180 85
+        M 147 55 L 163 55
+      " fill="none" />
+    </svg>
+    <!-- Sterren worden hier geplaatst -->
+  </main>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" aria-modal="true" role="dialog">
+    <div class="card">
+      <img id="photoImg" src="" alt="Foto" loading="eager" />
+      <div class="caption">
+        <button class="btn-close" id="closeBtn" type="button">Sluiten</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Finale tekst -->
+  <div class="final" id="final">
+    <div class="msg">
+      <h2 id="finalTitle">Jij bent mijn hele sterrenhemel ❤️</h2>
+      <p id="finalText">Elke ster leidde naar jou. Ik hou van je, voor altijd.</p>
+    </div>
+  </div>
+
+  <div class="progress" id="progress">Gezien 0/6</div>
+
+<script>
+  /******** INSTELLINGEN ********/
+  const photosInput = [
+    "images/photo1.jpg",
+    "images/photo2.jpg",
+    "images/photo3.jpg",
+    "images/photo4.jpg",
+    "images/photo5.jpg",
+    "images/photo6.jpg"
+  ];
+  const STAR_COUNT = Math.max(120, photosInput.length * 16);
+  const RANDOM_SEED = Date.now();
+  const REQUIRED_VIEWS = photosInput.length; // finale na laatste foto
+
+  /******** STATE & ELEMENTEN ********/
+  let currentIndex = -1;               // laatste geopende index (niet gebruiken voor volgorde)
+  let finaleTriggered = false;
+  let lastStar = null;
+  let pendingFinale = false;           // wordt true zodra de laatste foto is geopend
+  const remainingQueue = [];           // indices die nog niet getoond zijn
+  const openedSet = new Set();         // voor voortgang
+
+  const sky = document.getElementById("sky");
+  const fx = document.getElementById("fx");
+  const ctx = fx.getContext("2d");
+  const twinkleEl = document.getElementById("twinkle");
+  const lightbox = document.getElementById("lightbox");
+  const photoImg = document.getElementById("photoImg");
+  const final = document.getElementById("final");
+  const progressEl = document.getElementById("progress");
+  const musicBtn = document.getElementById("musicBtn");
+
+  const heartPath = document.getElementById("heartPath");
+  const pathR = document.getElementById("pathR");
+  const pathH = document.getElementById("pathH");
+  const pathA = document.getElementById("pathA");
+
+  let photos = [];
+  let isRealPhoto = [];
+  let audio;
+
+  /******** MUZIEK (optioneel) ********/
+  async function testFileExists(url){
+    if (url.match(/\.(mp3|wav|ogg)$/i)) {
+      return new Promise(res=>{
+        const a = new Audio();
+        a.oncanplaythrough = ()=> res(true);
+        a.onerror = ()=> res(false);
+        a.src = url + (url.includes("?")?"&":"?") + "_cb=" + Date.now();
+      });
+    }
+    return testImage(url);
+  }
+  async function toggleMusic(){
+    try{
+      if(!audio){
+        const candidates = ["audio/love.mp3","audio/music.mp3","music.mp3"];
+        for(const src of candidates){
+          const ok = await testFileExists(src);
+          if(ok){ audio = new Audio(src); audio.loop = true; break; }
+        }
+      }
+      if(!audio){ musicBtn.textContent = "♪ Liefdesmuziek (geen bestand)"; return; }
+      if(audio.paused){ await audio.play(); musicBtn.textContent = "⏸︎ Pauzeer muziek"; }
+      else{ audio.pause(); musicBtn.textContent = "♪ Liefdesmuziek"; }
+    }catch(e){ musicBtn.textContent = "♪ Liefdesmuziek (geblokkeerd)"; }
+  }
+  musicBtn.addEventListener("click", toggleMusic);
+
+  /******** HULPFUNCTIES ********/
+  function rand(min, max){ return Math.random() * (max - min) + min; }
+  function seeded(i){ const x = Math.sin(RANDOM_SEED + i * 999) * 10000; return x - Math.floor(x); }
+  function samplePathPoints(path, n){
+    const len = path.getTotalLength(), pts = [];
+    for(let i=0;i<n;i++){ const u = n<=1 ? 0 : i/(n-1); const p = path.getPointAtLength(u*len); pts.push({x:p.x, y:p.y}); }
+    return pts;
+  }
+  function toViewportCoords(pts, svgSelector){
+    const svg = document.querySelector(svgSelector);
+    const vb = svg.viewBox.baseVal; const rect = svg.getBoundingClientRect();
+    return pts.map(p => ({
+      x: rect.left + (p.x - vb.x) / vb.width * rect.width,
+      y: rect.top  + (p.y - vb.y) / vb.height * rect.height
+    }));
+  }
+  function updateProgress(){
+    progressEl.textContent = `Gezien ${Math.min(openedSet.size, REQUIRED_VIEWS)}/${REQUIRED_VIEWS}`;
+    if(finaleTriggered) progressEl.style.opacity = .2;
+  }
+  function pathReplaceExt(path, newExt){
+    const idx = path.lastIndexOf(".");
+    if (idx === -1) return `${path}.${newExt}`;
+    return path.slice(0, idx+1) + newExt;
+  }
+  function testImage(src){
+    return new Promise(resolve=>{
+      const img = new Image();
+      img.onload = ()=> resolve(true);
+      img.onerror = ()=> resolve(false);
+      const url = src.includes("?") ? src + "&_cb=" + Date.now() : src + "?_cb=" + Date.now();
+      img.src = url;
+    });
+  }
+  async function resolvePhotoPaths(inputList){
+    const exts = ["jpg","jpeg","png","webp","JPG","JPEG","PNG","WEBP"];
+    photos = new Array(inputList.length);
+    isRealPhoto = new Array(inputList.length).fill(false);
+    for (let i=0;i<inputList.length;i++){
+      const original = inputList[i];
+      let chosen = null;
+      if (await testImage(original)){ chosen = original; }
+      if (!chosen){
+        for (const ext of exts){
+          const alt = pathReplaceExt(original, ext);
+          if (alt === original) continue;
+          if (await testImage(alt)){ chosen = alt; break; }
+        }
+      }
+      if (chosen){ photos[i] = chosen; isRealPhoto[i] = true; }
+      else{ photos[i] = null; isRealPhoto[i] = false; }
+    }
+  }
+
+  /******** STERREN (willekeurige start) ********/
+  function makeStarElement(sizePx, i, skyRect){
+    const btn = document.createElement("button");
+    // ⭐ special stars (about 1 in 17)
+if (i % 17 === 0) {
+  btn.classList.add("special-star");
+}
+
+    btn.className = "star";
+    btn.type = "button";
+    btn.setAttribute("aria-label", "Open een ster-herinnering");
+
+    const dot = document.createElement("div"); dot.className = "dot"; btn.appendChild(dot);
+    const spark = document.createElement("div"); spark.className = "spark"; btn.appendChild(spark);
+
+    btn.style.width = `${sizePx}px`; btn.style.height= `${sizePx}px`;
+
+    // Willekeurige positie
+    const rx = seeded(i), ry = seeded(i+37);
+    const x = Math.floor(rx * skyRect.width);
+    const y = Math.floor(ry * skyRect.height);
+    btn.style.left = `${x}px`; btn.style.top  = `${y}px`;
+
+    // Beweging per ster
+    const root = getComputedStyle(document.documentElement);
+    const driftMin = parseFloat(root.getPropertyValue('--drift-min')) || 6;
+    const driftMax = parseFloat(root.getPropertyValue('--drift-max')) || 16;
+    const driftDurMin = parseFloat(root.getPropertyValue('--drift-dur-min')) || 6;
+    const driftDurMax = parseFloat(root.getPropertyValue('--drift-dur-max')) || 14;
+    const twinkleMin = parseFloat(root.getPropertyValue('--twinkle-min')) || 2.2;
+    const twinkleMax = parseFloat(root.getPropertyValue('--twinkle-max')) || 4.2;
+
+    const ax = (seeded(i+123) * (driftMax - driftMin) + driftMin) * (seeded(i+777) > 0.5 ? 1 : -1);
+    const ay = (seeded(i+321) * (driftMax - driftMin) + driftMin) * (seeded(i+555) > 0.5 ? 1 : -1);
+    const driftDur = (seeded(i+999) * (driftDurMax - driftDurMin) + driftDurMin).toFixed(2) + "s";
+    const driftDelay = (seeded(i+222) * 3).toFixed(2) + "s";
+    const twinkleDur = (seeded(i+333) * (twinkleMax - twinkleMin) + twinkleMin).toFixed(2) + "s";
+    const twinkleDelay = (seeded(i+444) * 2).toFixed(2) + "s";
+    const spinDur = (6 + seeded(i+888)*6).toFixed(2) + "s";
+
+    btn.style.setProperty("--ax", `${ax}px`);
+    btn.style.setProperty("--ay", `${ay}px`);
+    btn.style.setProperty("--drift-dur", driftDur);
+    btn.style.setProperty("--drift-delay", driftDelay);
+    dot.style.setProperty("--twinkle-dur", twinkleDur);
+    dot.style.setProperty("--twinkle-delay", twinkleDelay);
+    spark.style.setProperty("--spin-dur", spinDur);
+
+    // Klik (met effectpunt)
+    const handler = ()=>{
+      const rect = btn.getBoundingClientRect();
+      const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+      onStarClick(btn, cx, cy);
+    };
+    btn.addEventListener("pointerup", handler, { passive:true });
+    btn.addEventListener("keydown", (ev) => { if(ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); handler(); } });
+
+    return btn;
+  }
+
+  function createStars(){
+    const rect = sky.getBoundingClientRect();
+    resizeCanvas();
+    for(let i=0;i<STAR_COUNT;i++){
+      const size = 18 + Math.floor(seeded(i+123)*10); // 18..28px
+      const s = makeStarElement(size, i, rect);
+      sky.appendChild(s);
+    }
+    scheduleShootingStar();
+  }
+
+  /******** FX: deeltjes + mini-constellatie ********/
+  const particles = [];
+  // ✨ constellation points
+  const constellation = [];
+
+  const clickTrail = [];
+  function resizeCanvas(){
+    const r = sky.getBoundingClientRect();
+    fx.width = Math.max(1, Math.floor(r.width));
+    fx.height = Math.max(1, Math.floor(r.height));
+    fx.style.width = r.width + "px";
+    fx.style.height = r.height + "px";
+  }
+  function screenToCanvas(x,y){
+    const r = fx.getBoundingClientRect();
+    return { x: x - r.left, y: y - r.top };
+  }
+  function particleBurst(x,y, n=16){
+    const p = screenToCanvas(x,y);
+    for(let i=0;i<n;i++){
+      particles.push({
+        x:p.x, y:p.y,
+        vx: Math.cos(i/n*Math.PI*2) * rand(40,120)/100,
+        vy: Math.sin(i/n*Math.PI*2) * rand(40,120)/100,
+        life: rand(0.7,1.1), age:0,
+        size: rand(1.2,2.2),
+        hue: rand(45,65)
+      });
+    }
+  }
+  function pushTrail(x,y){
+    const p = screenToCanvas(x,y);
+    clickTrail.push({x:p.x, y:p.y, t: performance.now()});
+    if(clickTrail.length > 8) clickTrail.shift();
+  }
+  function drawFX(dt){
+    ctx.fillStyle = "rgba(3,6,17,0.16)";
+    ctx.fillRect(0,0,fx.width,fx.height);
+
+    if(clickTrail.length >= 2){
+      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = "rgba(255, 235, 170, 0.55)";
+      ctx.beginPath();
+      for(let i=0;i<clickTrail.length;i++){
+        const {x,y} = clickTrail[i];
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+    // ✨ constellation lines (persistent)
+    if (constellation.length >= 2) {
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "rgba(255, 220, 160, 0.25)";
+        ctx.beginPath();
+    for (let i = 0; i < constellation.length; i++) {
+        const { x, y } = constellation[i];
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+}
+
+
+    for(let i=particles.length-1;i>=0;i--){
+      const p = particles[i];
+      p.age += dt;
+      p.x += p.vx * 60 * dt;
+      p.y += p.vy * 60 * dt;
+      p.vy -= 0.02;
+      const a = Math.max(0, 1 - p.age / p.life);
+      if(a <= 0){ particles.splice(i,1); continue; }
+      ctx.fillStyle = `hsla(${p.hue}, 90%, 70%, ${a})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  let lastT = 0;
+  function tick(t){
+    const dt = Math.min(0.05, (t - lastT) / 1000 || 0.016);
+    lastT = t;
+    drawFX(dt);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  /******** Volgorde zonder duplicaten ********/
+  function initQueue(){
+    remainingQueue.length = 0;
+    for(let i=0;i<photosInput.length;i++){ remainingQueue.push(i); }
+  }
+
+  function onStarClick(star, sx, sy){
+    lastStar = star;
+    if(finaleTriggered) return;
+
+    const dot = star.querySelector(".dot");
+    dot.animate([
+      { transform:"scale(1)", filter:"brightness(1)" },
+      { transform:"scale(1.25)", filter:"brightness(1.25)" },
+      { transform:"scale(1)", filter:"brightness(1)" }
+    ], { duration: 260, easing:"ease-out" });
+
+    particleBurst(sx, sy, 18);
+    pushTrail(sx, sy);
+    // add point to constellation
+    constellation.push(screenToCanvas(sx, sy));
+
+
+    // Open de eerstvolgende nog-niet-bekeken foto
+    if(remainingQueue.length > 0){
+      const nextIdx = remainingQueue.shift();
+      openPhotoAt(nextIdx);
+    }
+    // Als alles bekeken is, doen sterklikken niets meer (en wachten we op sluiten van de laatste foto)
+  }
+
+  function preloadAround(index){
+    const next = photos[index+1];
+    if(next){ const img = new Image(); img.src = next; }
+  }
+
+  function openPhotoAt(idx){
+    currentIndex = idx;
+    lightbox.classList.add("open");
+
+    // Voortgang: zodra geopend (ongeacht laden)
+    openedSet.add(idx);
+    updateProgress();
+
+    const url = photos[idx];
+    photoImg.style.filter = "blur(6px) saturate(0.9)";
+
+    if (url && isRealPhoto[idx]){
+      photoImg.onload = ()=>{
+        photoImg.style.filter = "blur(0) saturate(1)";
+      };
+      photoImg.onerror = ()=>{
+        photoImg.removeAttribute("src");
+        photoImg.style.filter = "none";
+      };
+      photoImg.src = url;
+      preloadAround(idx);
+    } else {
+      const ph = makePlaceholderURL("Foto niet gevonden", "#444", "#777");
+      photoImg.onload = null;
+      photoImg.onerror = null;
+      photoImg.src = ph;
+      photoImg.style.filter = "none";
+    }
+
+    // Finale klaarzetten ALLEEN als dit de laatste (6e) is
+    if(openedSet.size >= REQUIRED_VIEWS){
+      pendingFinale = true; // toon animatie pas bij sluiten van deze laatste foto
+    }
+  }
+
+  function closePhoto(){
+    lightbox.classList.remove("open");
+    if (lastStar) {
+        lastStar.classList.add("afterglow");
+        setTimeout(() => {
+            lastStar.classList.remove("afterglow");
+        }, 2600);
+    }
+    // Start de animatie pas nadat de laatste foto is geopend en nu afgesloten
+    if(pendingFinale && !finaleTriggered){
+      triggerFinale();
+    }
+  }
+  document.getElementById("closeBtn").addEventListener("click", closePhoto);
+  lightbox.addEventListener("click", (e)=>{ if(e.target === lightbox) closePhoto(); });
+
+  // Geen pijltjes/swipen om duplicaten te voorkomen.
+
+  /******** Finale: Hart (fase 1) → “R ❤️ A” (fase 2) ********/
+  function heartPulse(){
+    const pulse = document.createElement("div");
+    pulse.style.position = "fixed";
+    pulse.style.left = "50%"; pulse.style.top = "50%";
+    pulse.style.transform = "translate(-50%,-50%)";
+    pulse.style.width = "36vmax"; pulse.style.height = "36vmax";
+    pulse.style.borderRadius = "50%";
+    pulse.style.background = "radial-gradient(circle, rgba(255,60,120,.16), rgba(255,60,120,0) 60%)";
+    pulse.style.zIndex = "5"; pulse.style.pointerEvents="none"; pulse.style.opacity="0";
+    document.body.appendChild(pulse);
+    pulse.animate([
+      { opacity: .0, transform:"translate(-50%,-50%) scale(.6)" },
+      { opacity: .5, transform:"translate(-50%,-50%) scale(1.05)" },
+      { opacity: 0, transform:"translate(-50%,-50%) scale(1.4)" }
+    ], { duration: 1200, easing:"ease-out" }).onfinish = ()=> pulse.remove();
+  }
+
+  function getCenters(stars){
+    return stars.map(s=>{
+      const r = s.getBoundingClientRect();
+      return { x: r.left + r.width/2, y: r.top + r.height/2 };
+    });
+  }
+
+  function animateToTargets(stars, starts, targets, duration=1600){
+    stars.forEach((s, i)=>{
+      const start = starts[i];
+      const target = targets[i % targets.length];
+      s.style.position = "fixed"; s.style.left = "0"; s.style.top = "0"; s.style.zIndex = "1000";
+      s.style.transform = `translate(${start.x}px, ${start.y}px)`;
+      const midX = (start.x + target.x)/2 + (Math.random()*60 - 30);
+      const midY = (start.y + target.y)/2 + (Math.random()*60 - 30);
+      s.animate([
+        { transform:`translate(${start.x}px, ${start.y}px) scale(1)` },
+        { transform:`translate(${midX}px, ${midY}px) scale(1.25)` },
+        { transform:`translate(${target.x}px, ${target.y}px) scale(1)` }
+      ], { duration: duration, easing:"cubic-bezier(.22,.61,.36,1)", fill:"forwards" });
+    });
+  }
+
+  function buildHeartTargets(count){
+    return toViewportCoords(samplePathPoints(heartPath, Math.max(count, 60)), ".heart-shape");
+  }
+
+  function buildRHeartATargets(count){
+    // Verdeling: 40% R, 20% klein hart, 40% A
+    const nR = Math.max(20, Math.round(count * 0.4));
+    const nH = Math.max(12, Math.round(count * 0.2));
+    const nA = Math.max(20, count - nR - nH);
+
+    const ptsR = toViewportCoords(samplePathPoints(pathR, nR), ".initials-shape");
+    const ptsH = toViewportCoords(samplePathPoints(pathH, nH), ".initials-shape");
+    const ptsA = toViewportCoords(samplePathPoints(pathA, nA), ".initials-shape");
+    return ptsR.concat(ptsH).concat(ptsA);
+  }
+
+  function triggerFinale(){
+    finaleTriggered = true;
+    pendingFinale = false;
+
+    const stars = Array.from(document.querySelectorAll(".star"));
+    const starts = getCenters(stars);
+
+    // Fase 1: groot hart
+    const heartTargets = buildHeartTargets(stars.length);
+    animateToTargets(stars, starts, heartTargets, 1600);
+    heartPulse();
+
+    // Fase 2: even vasthouden, dan naar 'R ❤️ A'
+    setTimeout(()=>{
+      const centersNow = getCenters(stars);
+      const raTargets = buildRHeartATargets(stars.length);
+      animateToTargets(stars, centersNow, raTargets, 1600);
+
+      setTimeout(()=>{
+        final.classList.add("show");
+        document.getElementById("finalTitle").textContent = "Jij bent mijn hele sterrenhemel ❤️";
+        document.getElementById("finalText").textContent  = "Elke ster leidde naar jou. Ik hou van je, voor altijd.";
+        burstHearts(14);
+        setTimeout(heartPulse, 900);
+      }, 1800);
+    }, 1400);
+        // 🌌 afterglow mode
+    document.body.classList.add("afterglow-mode");
+    if (audio) audio.volume = 0.4;
+
+  }
+
+  function burstHearts(n=10){
+    for(let i=0;i<n;i++){
+      const h = document.createElement("div");
+      h.className = "float-heart";
+      h.textContent = ["❤️","💖","💞","💗","💕"][i % 5];
+      h.style.left = `${50 + (Math.random()*50 - 25)}%`;
+      h.style.fontSize = `${22 + Math.floor(Math.random()*12)}px`;
+      h.style.animationDelay = `${Math.random()*.8}s`;
+      document.body.appendChild(h);
+      setTimeout(()=> h.remove(), 3800);
+    }
+  }
+
+  /******** Parallax & Vallende sterren ********/
+  function scheduleShootingStar(){
+    const root = getComputedStyle(document.documentElement);
+    const min = parseFloat(root.getPropertyValue('--shooting-every-min')) || 6;
+    const max = parseFloat(root.getPropertyValue('--shooting-every-max')) || 12;
+    const delay = rand(min, max);
+    setTimeout(()=>{ spawnShootingStar(); scheduleShootingStar(); }, delay*1000);
+  }
+  function spawnShootingStar(){
+    const s = document.createElement("div");
+    s.className = "shooting";
+    const sx = rand(-0.1*innerWidth, 0.3*innerWidth);
+    const sy = rand(-0.1*innerHeight, 0.4*innerHeight);
+    const ex = sx + rand(0.45*innerWidth, 0.8*innerWidth);
+    const ey = sy - rand(0.2*innerHeight, 0.45*innerHeight);
+    const ang = -20 + rand(-10, 10);
+    s.style.setProperty("--sx", `${sx}px`);
+    s.style.setProperty("--sy", `${sy}px`);
+    s.style.setProperty("--ex", `${ex}px`);
+    s.style.setProperty("--ey", `${ey}px`);
+    s.style.setProperty("--ang", `${ang}deg`);
+    s.style.setProperty("--t", `${1000 + Math.floor(rand(0,700))}ms`);
+    document.body.appendChild(s);
+    s.addEventListener("animationend", ()=> s.remove());
+  }
+
+  // Achtergrond-parallax
+  let parallaxRAF = null, targetPX = 0, targetPY = 0, curPX = 0, curPY = 0;
+  function queueParallax(){
+    if (parallaxRAF) return;
+    parallaxRAF = requestAnimationFrame(()=>{
+      parallaxRAF = null;
+      curPX += (targetPX - curPX) * 0.08;
+      curPY += (targetPY - curPY) * 0.08;
+      twinkleEl.style.transform = `translate(${curPX}px, ${curPY}px) scale(1.02)`;
+    });
+  }
+  function handlePointerMove(e){
+    const cx = window.innerWidth/2, cy = window.innerHeight/2;
+    const dx = (e.clientX - cx) / cx;
+    const dy = (e.clientY - cy) / cy;
+    targetPX = dx * 10;
+    targetPY = dy * 10;
+    queueParallax();
+  }
+  window.addEventListener("pointermove", handlePointerMove, { passive:true });
+
+  /******** INIT ********/
+  function makePlaceholderURL(label, c1="#444", c2="#777"){
+    const svg =
+`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/>
+  </linearGradient></defs>
+  <rect width="100%" height="100%" fill="url(#g)"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+        font-size="36" font-family="Arial, Helvetica, sans-serif" fill="white">${label}</text>
+</svg>`;
+    const blob = new Blob([svg], {type:"image/svg+xml"});
+    return URL.createObjectURL(blob);
+  }
+
+  window.addEventListener("resize", resizeCanvas);
+  window.addEventListener("load", async ()=>{
+    await resolvePhotoPaths(photosInput);
+    initQueue();        // lijst met nog-te-zien indices vullen
+    createStars();      // ⭐ Willekeurig starten
+    updateProgress();
+  });
+</script>
+</body>
+</html>
+``

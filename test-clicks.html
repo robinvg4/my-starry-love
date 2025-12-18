@@ -1,0 +1,14 @@
+
+<!DOCTYPE html>
+<html<html>
+<body style="height:100vh; margin:0; background:#123;">
+  <button id="b" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:9999;">
+    Click me
+  </button>
+  <script>
+    document.addEventListener("click", (e) => {
+      console.log("Global click:", e.target);
+    }, true);
+    document.getElementById("b").addEventListener("click", () => alert("Button clicked!"));
+  </script>
+</body>
